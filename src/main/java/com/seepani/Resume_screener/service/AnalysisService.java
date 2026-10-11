@@ -82,9 +82,9 @@ public class AnalysisService {
             );
         }
 
-        if (jobDescription.length() > 10000) {
+        if (jobDescription.length() > 50000) {
             throw new InvalidInputException(
-                    "Job description is too long (max 10,000 characters)."
+                "Job description is too long (max 30,000 characters)."
             );
         }
     }
@@ -97,8 +97,8 @@ public class AnalysisService {
                 ? resumeParserService.extractText(resumeFile)
                 : resumeText.trim();
 
-        return text.length() > 15000
-                ? text.substring(0, 15000)
+        return text.length() > 50000
+                ? text.substring(0, 50000)
                 : text;
     }
 }

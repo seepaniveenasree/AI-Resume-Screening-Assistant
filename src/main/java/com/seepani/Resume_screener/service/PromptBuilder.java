@@ -56,9 +56,19 @@ public class PromptBuilder {
 	        - strengths: 3-6 evidence-based points showing how the resume matches.
 	        - matchedSkills and missingSkills: use the same short names as
 	          requiredSkills. Only mark a skill matched when evidence supports it.
-	        - interviewQuestions: exactly 5 questions about relevant JD technologies.
-	          Make them specific to listed projects or experience where possible.
-	          Mix basic and practical scenario questions.
+	        - - interviewQuestions: generate 10-15 questions about relevant JD technologies.
+                Include:
+                  1. 3-4 basic technical questions.
+                  2. 3-4 practical or scenario-based questions.
+                  3. 2-3 questions about the candidate's listed projects or internships.
+                  4. 2-4 questions about important skills required by the job description.
+                  Avoid duplicate questions and questions unrelated to the target role.
+                  Base project-specific questions only on projects or experience actually
+                  mentioned in the resume. If the resume provides limited evidence, ask
+                  general questions about relevant JD technologies instead.
+                  Each question must contain:
+                   - technology: the relevant technology or skill name.
+                   - question: one clear interview question.
 	        - hiringRecommendation.decision: exactly Hire, Consider, or Reject.
 	          Give a reason of 2-3 sentences.
 	        - roleRecommendations: 2-4 suitable roles, including the target role

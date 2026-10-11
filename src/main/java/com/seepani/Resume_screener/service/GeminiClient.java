@@ -25,15 +25,15 @@ public class GeminiClient {
     private static final Logger log = LoggerFactory.getLogger(GeminiClient.class);
     private static final int MAX_ATTEMPTS = 2;
     private static final long RETRY_DELAY_MS = 2000;
-
     public GeminiClient(RestClient geminiRestClient,
                         @Value("${gemini.model}") String model,
                         @Value("${gemini.api-key}") String apiKey) {
         this.restClient = geminiRestClient;
         this.model = model;
         this.apiKey = apiKey;
+        log.info("Gemini key starts with AQ.: {}", apiKey != null && apiKey.startsWith("AQ."));
+        log.info("Gemini key length: {}", apiKey == null ? 0 : apiKey.length());
     }
-
     public String generate(String systemPrompt, String userPrompt) {
         Map<String, Object> body = Map.of(
             "systemInstruction",
@@ -82,62 +82,67 @@ public class GeminiClient {
             }
         }
     }
+    
+  private String callGemini(Map<String, Object> body) {
+    JsonNode response = restClient.post()
+        .uri("/models/{model}:generateContent", model)
+        .header("x-goog-api-key", apiKey)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(body)
+        .retrieve()
+        .body(JsonNode.class);
 
-    private String callGemini(Map<String, Object> body) {
-        JsonNode response = restClient.post()
-            .uri("/models/{model}:generateContent", model)
-            .header("x-goog-api-key", apiKey)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .body(JsonNode.class);
+    String text = response == null ? "" : response
+        .path("candidates").path(0)
+        .path("content").path("parts").path(0)
+        .path("text").asText("");
 
-        String text = response == null ? "" : response
-            .path("candidates").path(0)
-            .path("content").path("parts").path(0)
-            .path("text").asText("");
-
-        if (text.isBlank()) {
-            throw new AiServiceException(
-                "The AI returned an empty response. Please try again."
-            );
-        }
-
-        return text;
+    if (text.isBlank()) {
+        throw new AiServiceException(
+            "The AI returned an empty response. Please try again."
+        );
     }
+ 
+     return text;
+   }
+
 
     private boolean isRetryable(int code) {
         return code == 429 || code >= 500;
     }
 
-    private AiServiceException translate(RestClientResponseException e) {
-        int code = e.getStatusCode().value();
 
-        // Do not log the full response body.
-        log.error("Gemini API returned HTTP status {}.", code);
+private AiServiceException translate(RestClientResponseException e) {
+    int code = e.getStatusCode().value();
 
-        if (code == 429) {
-            return new AiServiceException(
-                HttpStatus.TOO_MANY_REQUESTS,
-                "The AI service is busy. Please wait a minute and try again.",
-                e
-            );
-        }
+    log.error(
+        "Gemini API returned HTTP status {}. Response: {}",
+        code,
+        e.getResponseBodyAsString()
+    );
 
-        if (code >= 500) {
-            return new AiServiceException(
-                HttpStatus.SERVICE_UNAVAILABLE,
-                "The AI service is temporarily unavailable. Please try again shortly.",
-                e
-            );
-        }
-
+    if (code == 429) {
         return new AiServiceException(
-            HttpStatus.BAD_GATEWAY,
-            "The AI service could not process the request. Please check the configuration.",
+            HttpStatus.TOO_MANY_REQUESTS,
+            "The AI service is busy. Please wait a minute and try again.",
             e
         );
     }
+
+    if (code >= 500) {
+        return new AiServiceException(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "The AI service is temporarily unavailable. Please try again shortly.",
+            e
+        );
+    }
+
+    return new AiServiceException(
+        HttpStatus.BAD_GATEWAY,
+        "The AI service could not process the request. Please check the configuration.",
+        e
+    );
+}
 
     private void pause() {
         try {

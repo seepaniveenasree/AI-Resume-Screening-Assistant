@@ -27,6 +27,8 @@ public class ResumeParserService {
             }
 
             text = clean(text);
+            System.out.println("Uploaded file: " + filename);
+            System.out.println("Extracted resume text length: " + text.length());
 
             if (text.length() < MIN_TEXT_LENGTH) {
                 throw new InvalidInputException(

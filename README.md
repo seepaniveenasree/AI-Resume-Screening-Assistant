@@ -93,7 +93,7 @@ The browser never talks to the AI directly. The API key stays on the server.
 ## AI model and API used
 
 - **Provider:** Google Gemini, through the Gemini API from Google AI Studio.
-- **Model:** `[FILL IN: the model name from gemini.model in application.properties]`
+- **Model:** gemini.model=gemini-3.8-flash
 - **How it is called:** a plain REST request to the `generateContent` endpoint using Spring's `RestClient`, with no SDK. The API key travels in a request header.
 
 **Why Gemini:** it has a free tier that suits a project like this, it can return structured JSON directly, and it works over a simple REST call, which kept the backend easy to follow.
@@ -130,8 +130,6 @@ Resume-screener/
 │       ├── pages/       Home, Analyze, Results
 │       ├── services/    API client and PDF report generator
 │       └── utils/       Scoring helpers
-├── docs/                Sample resume and job description for trying the app
-├── screenshots/         Images used in this README
 └── README.md
 ```
 
@@ -151,7 +149,7 @@ The backend sits at the repository root and the React app lives in `frontend/`.
 ### 1. Clone the repository
 
 ```bash
-git clone [FILL IN: your repository URL]
+git clone https://github.com/seepaniveenasree/AI-Resume-Screening-Assistant[FILL IN: your repository URL]
 cd Resume-screener
 ```
 
@@ -174,7 +172,7 @@ export GEMINI_API_KEY="your-key-here"
 Then check the model name in `src/main/resources/application.properties`:
 
 ```properties
-gemini.model=[FILL IN: model name]
+gemini.model=gemini-3.8-flash
 ```
 
 Run the app from the same terminal:
@@ -213,10 +211,6 @@ npm run dev
 ```
 
 Open http://localhost:5173.
-
-### 4. Try it
-
-Use the files in the `docs/` folder: upload the sample resume and paste the sample job description. The analysis takes roughly 10 to 30 seconds.
 
 ### Configuration reference
 
@@ -342,17 +336,6 @@ Every error uses the same shape, so the frontend can show the message directly:
 - Resume text is sent to Google's Gemini API to produce the analysis. Only analyze resumes you have permission to use, and check Google's current terms for how data sent to the API is handled.
 - This app does not store resumes or results. Raw AI responses are only logged at debug level.
 - AI scoring can carry bias and can make mistakes. The report is meant to support a person making the decision, and it should not replace one. Each PDF says so in its footer.
-
----
-
-## What I would add next
-
-- Login and saved history, using Spring Security with JWT and a database.
-- Comparing several resumes against one job description.
-- OCR for scanned PDFs.
-- A Docker setup so the whole app starts with one command.
-- Caching results for identical inputs, and rate limiting per user.
-- Deploying the app online.
 
 ---
 
